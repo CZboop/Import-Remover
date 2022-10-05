@@ -4,19 +4,43 @@ class ImportRemover:
     def __init__(self, file):
         self.file = file 
 
-    def remove(self):
-        pass
-
+    # find where imports are
     def _identify_imports(self):
         import_patterns =  [r'^import\b[^\n]*' , r'^from\W+(?:\w+\W+)import\b[^\n]*']
         all_results = []
         for pattern in import_patterns:
             re_results = re.findall(pattern, self.file)
             if re_results: all_results.extend(re_results)
+
+        import_results = []
+        for match in all_results:
+            if "," not in match:
+                    import_results.append(match.split(" ")[-1])
+            else:
+                if match.split(" ")[0] == "import":
+                    import_results.extend([i.strip() for i in " ".join(match.split(" ")[1:]).split(",")])
+
+                elif match.split(" ")[0] == "from":
+                    import_results.extend([i.strip() for i in " ".join(match.split(" import ")[1:]).split(",")])
+
+                else:
+                    raise ValueError('Match found of type not expecting - have the regex patterns been updated?')
+
+        self.imports = import_results
+        return import_results
+
+    # find uses of imported things if present
+    def _identify_uses(self):
+        uses = {}
+        for match in self.imports:
+            # edge cases if import seemingly used but within string?
+            uses_of_match = re.findall(f'{match}.')
         
-        return all_results
+    # remove imports if not used within body of file
+    def remove(self):
+        pass
 
 if __name__=='__main__':
-    basic_test = ImportRemover("""from test import testing
+    basic_test = ImportRemover("""from that import things
     """)
     print([i for i in basic_test._identify_imports()])
