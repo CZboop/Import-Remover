@@ -2,14 +2,23 @@ import re
 
 class ImportRemover:
     def __init__(self, file):
-        self.file = file 
+        self.file = file
+        self._read_file()
+
+    def _read_file(self):
+        # check file type is .py (or maybe .txt?)
+        if str(self.file).endswith('.py'):
+            with open(self.file, 'r') as file:
+                self.text = file.read()
+        else:
+            raise ValueError("Unsupported file type - try again with a .py file")
 
     # find where imports are
     def _identify_imports(self):
         import_patterns =  [r'^import\b[^\n]*' , r'^from\W+(?:\w+\W+)import\b[^\n]*']
         all_results = []
         for pattern in import_patterns:
-            re_results = re.findall(pattern, self.file)
+            re_results = re.findall(pattern, self.text)
             if re_results: all_results.extend(re_results)
 
         import_results = []
@@ -41,6 +50,5 @@ class ImportRemover:
         pass
 
 if __name__=='__main__':
-    basic_test = ImportRemover("""from that import things
-    """)
+    basic_test = ImportRemover("test.py")
     print([i for i in basic_test._identify_imports()])
