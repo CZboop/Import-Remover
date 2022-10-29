@@ -59,6 +59,17 @@ class TestImportRemover(unittest.TestCase):
         expected = {}
         self.assertEqual(actual, expected)
 
+    def test_can_remove_imports_when_some_used_on_same_line(self):
+        test_string = """import that\nfrom this import those, thing\n\nvar = thing.use()"""
+
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        undertest._identify_uses()
+        actual = undertest.remove()
+        expected = """from this import thing\n\nvar = thing.use()"""
+        self.assertEqual(actual, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,1 +1,3 @@
-from this import that
+from this import thing
+
+var = thing.use()

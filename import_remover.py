@@ -55,15 +55,31 @@ class ImportRemover:
         
     # remove imports if not used within body of file
     def remove(self):
+        new_lines = {}
         for instance in self.imports:
             if instance not in self.uses:
-                # TODO: use original import match to remove whole line if not comma, else remove just the import 
-                # potentially including comma/space before or after
-                self.text = "\n".join(self.text).replace(instance, "")
+                # using original import match to remove whole line if not comma, else remove just the unused import 
+                match_line = str(list(filter(lambda x: instance in x, self.text))[0])
+                # adding original import line and what to replace it with as key and value
+                if "," not in match_line:
+                    # remove empty lines after/previous newline with these?
+                    new_lines[match_line] = ""
+                else:
+                    line_removed = match_line.replace(instance, "")
+                    # explicit strip to exclude newlines to preserve existing line breaks
+                    line_removed = ", ".join(i.strip(" ,") for i in line_removed.split(","))
+                    line_removed = line_removed.replace('import,', 'import')
+
+                    new_lines[match_line] = line_removed
+
+        text_joined = "".join(self.text)
+        for line in new_lines:
+            text_joined = text_joined.replace(line, new_lines[line])
         
         new_file = open(self.file, "w")
-        new_file.write(str(self.text))
+        new_file.write(text_joined)
         new_file.close()
+        return text_joined
 
 if __name__=='__main__':
     basic_test = ImportRemover("test.py")
