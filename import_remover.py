@@ -8,8 +8,10 @@ class ImportRemover:
     def _read_file(self):
         # check file type is .py (or maybe .txt?)
         if str(self.file).endswith('.py'):
+            self.text = []
             with open(self.file, 'r') as file:
-                self.text = file.read()
+                for line in file:
+                    self.text.append(str(line))
         else:
             raise ValueError("Unsupported file type - try again with a .py file")
 
@@ -18,8 +20,9 @@ class ImportRemover:
         import_patterns =  [r'^import\b[^\n]*' , r'^from\W+(?:\w+\W+)import\b[^\n]*']
         all_results = []
         for pattern in import_patterns:
-            re_results = re.findall(pattern, self.text)
-            if re_results: all_results.extend(re_results)
+            for line in self.text:
+                re_results = re.findall(pattern, line)
+                if re_results: all_results.extend(re_results)
 
         import_results = []
         for match in all_results:
@@ -43,12 +46,27 @@ class ImportRemover:
         uses = {}
         for match in self.imports:
             # edge cases if import seemingly used but within string?
-            uses_of_match = re.findall(f'{match}.')
+            text = "\\n".join(self.text)
+            uses_of_match = re.findall(f'{match}\.[a-zA-Z_][^\n]*', text)
+            if uses_of_match:
+                uses[match] = uses_of_match
+        self.uses = uses
+        return uses
         
     # remove imports if not used within body of file
     def remove(self):
-        pass
+        for instance in self.imports:
+            if instance not in self.uses:
+                # TODO: use original import match to remove whole line if not comma, else remove just the import 
+                # potentially including comma/space before or after
+                self.text = "\n".join(self.text).replace(instance, "")
+        
+        new_file = open(self.file, "w")
+        new_file.write(str(self.text))
+        new_file.close()
 
 if __name__=='__main__':
     basic_test = ImportRemover("test.py")
-    print([i for i in basic_test._identify_imports()])
+    basic_test._identify_imports()
+    basic_test._identify_uses()
+    basic_test.remove()

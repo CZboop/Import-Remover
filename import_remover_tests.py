@@ -41,6 +41,24 @@ class TestImportRemover(unittest.TestCase):
         expected = ["something", "and", "another", "thing"]
         self.assertEqual(actual, expected)
 
+    def test_can_identify_import_that_is_used(self):
+        test_string = "import something, and, another, thing\nexample = and.used()"
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        actual = undertest._identify_uses()
+        expected = {'and': ['and.used()']}
+        self.assertEqual(actual, expected)
+
+    def test_can_identify_no_imports_used(self):
+        test_string = "import something, and, another, thing\nexample = 1000"
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        actual = undertest._identify_uses()
+        expected = {}
+        self.assertEqual(actual, expected)
+
 
 if __name__ == "__main__":
     unittest.main()
