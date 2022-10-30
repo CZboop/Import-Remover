@@ -1,6 +1,7 @@
 import unittest
 from import_remover import ImportRemover
 import pathlib
+import subprocess
 
 class TestImportRemover(unittest.TestCase):
 
@@ -13,7 +14,7 @@ class TestImportRemover(unittest.TestCase):
     def test_can_identify_single_from_syntax_import(self):
         test_string = "from this import that"
         test_file = self.create_test_python_file(test_string)
-        undertest = ImportRemover(test_file)
+        undertest = ImportRemover('test.py')
         actual = undertest._identify_imports()
         expected = ["that"]
         self.assertEqual(actual, expected)
@@ -21,7 +22,7 @@ class TestImportRemover(unittest.TestCase):
     def test_can_identify_singe_import_syntax_import(self):
         test_string = "import something"
         test_file = self.create_test_python_file(test_string)
-        undertest = ImportRemover(test_file)
+        undertest = ImportRemover('test.py')
         actual = undertest._identify_imports()
         expected = ["something"]
         self.assertEqual(actual, expected)
@@ -128,5 +129,25 @@ class TestImportRemover(unittest.TestCase):
         expected = """from this import thing\nvar = thing(arg1, arg2)"""
         self.assertEqual(actual, expected)
 
+    def test_can_remove_without_calling_individual_methods(self):
+        test_string = """import that\nfrom this import those, thing, thing1234\nvar = thing(arg1, arg2)\nexample = those.use()"""
+
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        with open(test_file, 'r') as file:
+                actual = file.read()
+        expected = """from this import those, thing\nvar = thing(arg1, arg2)\nexample = those.use()"""
+        self.assertEqual(actual, expected)
+
+    def test_can_run_from_command_line(self):
+        test_string = """import that\nfrom this import those, thing, thing1234\nvar = thing(arg1, arg2)\nexample = those.use()"""
+
+        test_file = self.create_test_python_file(test_string)
+        subprocess.call(f'python import_remover.py {test_file}', shell=True)
+        with open(test_file, 'r') as file:
+                actual = file.read()
+        expected = """from this import those, thing\nvar = thing(arg1, arg2)\nexample = those.use()"""
+        self.assertEqual(actual, expected)
+        
 if __name__ == "__main__":
     unittest.main()

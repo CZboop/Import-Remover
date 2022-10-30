@@ -2,18 +2,25 @@ import re
 import argparse
 
 class ImportRemover:
-    def __init__(self, file):
-        self.file = file
-        # self._parse_input()
+    def __init__(self, argv=None):
+        # self.file = file
+        self.argv = argv
+        self._parse_input()
         self._read_file()
         self._identify_imports()
         self._identify_uses()
+        self.remove()
 
     def _parse_input(self):
-        self.parser = argparse.ArgumentParser(description = "Remove unused imports")
-        self.parser.add_argument('path', metavar = 'path', type = str, help = 'Enter the path to your .py file')
-        args = self.parser.parse_args()
-        self.file = args.path
+        if not self.argv:
+            self.parser = argparse.ArgumentParser(description = "Remove unused imports")
+            self.parser.add_argument('path', metavar = 'path', type = str, help = 'Enter the path to your .py file')
+            # if argv is none, takes command line args
+            args = self.parser.parse_args()
+            self.file = args.path
+        else:
+            self.file = self.argv
+        
 
     def _read_file(self):
         # check file type is .py, add for other langs with different import patterns?
@@ -99,4 +106,3 @@ class ImportRemover:
 
 if __name__ == "__main__":
     import_remover = ImportRemover()
-    import_remover.remove()
