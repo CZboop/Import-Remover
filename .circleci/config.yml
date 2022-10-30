@@ -23,11 +23,10 @@ jobs:
       - run:
           name: Run tests
           # Here just using the command line way of running the test file
-          command: 
-          python import_remover_tests.py
-          $HOME/.local/bin/coverage run -m pytest
-          $HOME/.local/bin/coverage report
-          $HOME/.local/bin/coverage html  # open htmlcov/index.html in a browser
+          command: python import_remover_tests.py
+          coverage run -m pytest
+          coverage report
+          coverage html
       - store_artifacts:
         path: htmlcov
 
