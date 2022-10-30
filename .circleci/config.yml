@@ -21,17 +21,13 @@ jobs:
       - python/install-packages:
           pkg-manager: pip
       - run:
-        name: Setup testing environment
-        command: |
-          pip install '.[test]' --user
-          echo $HOME
-      - run:
           name: Run tests
           # Here just using the command line way of running the test file
-          command: |
-            $HOME/.local/bin/coverage run -m pytest
-            $HOME/.local/bin/coverage report
-            $HOME/.local/bin/coverage html
+          command: python test_import_remover.py
+          coverage run -m pytest
+          coverage report
+          coverage html
+          
       - store_artifacts:
         path: htmlcov
 
