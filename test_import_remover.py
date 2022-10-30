@@ -1,5 +1,6 @@
 import unittest
 from import_remover import ImportRemover
+import pathlib
 
 class TestImportRemover(unittest.TestCase):
 
@@ -102,7 +103,30 @@ class TestImportRemover(unittest.TestCase):
         actual = undertest.remove()
         expected = test_string
         self.assertEqual(actual, expected)
+    
+    def test_can_use_absolute_path_for_input_file(self):
+        test_string = """import that\nfrom this import those, thing\n\nfrom this import something\n\nvar = something(arg1, arg2)\nimported = those.length\nname = thing(example)\nword = that()"""
 
+        test_file = self.create_test_python_file(test_string)
+        test_path = f"{pathlib.Path().resolve()}/test.py"
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_path)
+        undertest._identify_imports()
+        undertest._identify_uses()
+        actual = undertest.remove()
+        expected = test_string
+        self.assertEqual(actual, expected)
+
+    def test_can_remove_multiple_unused_on_same_line(self):
+        test_string = """import that\nfrom this import those, thing, thing1234\nvar = thing(arg1, arg2)"""
+
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        undertest._identify_uses()
+        actual = undertest.remove()
+        expected = """from this import thing\nvar = thing(arg1, arg2)"""
+        self.assertEqual(actual, expected)
 
 if __name__ == "__main__":
     unittest.main()

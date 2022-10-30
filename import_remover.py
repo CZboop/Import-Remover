@@ -1,9 +1,19 @@
 import re
+import argparse
 
 class ImportRemover:
     def __init__(self, file):
         self.file = file
+        # self._parse_input()
         self._read_file()
+        self._identify_imports()
+        self._identify_uses()
+
+    def _parse_input(self):
+        self.parser = argparse.ArgumentParser(description = "Remove unused imports")
+        self.parser.add_argument('path', metavar = 'path', type = str, help = 'Enter the path to your .py file')
+        args = self.parser.parse_args()
+        self.file = args.path
 
     def _read_file(self):
         # check file type is .py, add for other langs with different import patterns?
@@ -66,10 +76,15 @@ class ImportRemover:
                     # remove empty lines after/previous newline with these?
                     new_lines[match_line] = ""
                 else:
-                    line_removed = match_line.replace(instance, "")
+                    # single unused import in line
+                    if match_line not in new_lines:
+                        line_removed = match_line.replace(instance, "")
+                    # multiple unused imports on same line
+                    else:
+                        line_removed = new_lines[match_line].replace(instance, "")
                     # explicit strip to exclude newlines to preserve existing line breaks
                     line_removed = ", ".join(i.strip(" ,") for i in line_removed.split(","))
-                    line_removed = line_removed.replace('import,', 'import')
+                    line_removed = line_removed.replace('import,', 'import').replace(', \n', '\n').replace(',\n', '\n')
 
                     new_lines[match_line] = line_removed
 
@@ -82,8 +97,6 @@ class ImportRemover:
         new_file.close()
         return text_joined
 
-if __name__=='__main__':
-    basic_test = ImportRemover("test.py")
-    basic_test._identify_imports()
-    basic_test._identify_uses()
-    basic_test.remove()
+if __name__ == "__main__":
+    import_remover = ImportRemover()
+    import_remover.remove()
