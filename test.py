@@ -1,3 +1,3 @@
 from this import thing
 
-var = thing.use()
+var = thing(arg1, arg2)

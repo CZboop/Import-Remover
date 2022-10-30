@@ -70,6 +70,39 @@ class TestImportRemover(unittest.TestCase):
         expected = """from this import thing\n\nvar = thing.use()"""
         self.assertEqual(actual, expected)
 
+    def test_doesnt_remove_imported_function_no_args(self):
+        test_string = """import that\nfrom this import those, thing\n\nvar = thing()"""
+
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        undertest._identify_uses()
+        actual = undertest.remove()
+        expected = """from this import thing\n\nvar = thing()"""
+        self.assertEqual(actual, expected)
+
+    def test_doesnt_remove_imported_function_with_args(self):
+        test_string = """import that\nfrom this import those, thing\n\nvar = thing(arg1, arg2)"""
+
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        undertest._identify_uses()
+        actual = undertest.remove()
+        expected = """from this import thing\n\nvar = thing(arg1, arg2)"""
+        self.assertEqual(actual, expected)
+
+    def test_doesnt_remove_anything_if_all_imports_used(self):
+        test_string = """import that\nfrom this import those, thing\n\nfrom this import something\n\nvar = something(arg1, arg2)\nimported = those.length\nname = thing(example)\nword = that()"""
+
+        test_file = self.create_test_python_file(test_string)
+        undertest = ImportRemover(test_file)
+        undertest._identify_imports()
+        undertest._identify_uses()
+        actual = undertest.remove()
+        expected = test_string
+        self.assertEqual(actual, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

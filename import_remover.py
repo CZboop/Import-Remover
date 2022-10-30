@@ -6,7 +6,7 @@ class ImportRemover:
         self._read_file()
 
     def _read_file(self):
-        # check file type is .py (or maybe .txt?)
+        # check file type is .py, add for other langs with different import patterns?
         if str(self.file).endswith('.py'):
             self.text = []
             with open(self.file, 'r') as file:
@@ -48,6 +48,7 @@ class ImportRemover:
             # edge cases if import seemingly used but within string?
             text = "\\n".join(self.text)
             uses_of_match = re.findall(f'{match}\.[a-zA-Z_][^\n]*', text)
+            uses_of_match.extend(re.findall(f'{match}\(([a-zA-Z_0-9, ])*\)', text))
             if uses_of_match:
                 uses[match] = uses_of_match
         self.uses = uses
