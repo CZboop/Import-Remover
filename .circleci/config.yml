@@ -24,9 +24,15 @@ jobs:
           name: Run tests
           # Here just using the command line way of running the test file
           command: python test_import_remover.py
-          coverage run -m pytest
-          coverage report
-          coverage html
+      - run:
+          name: Run coverage
+          command: coverage run -m pytest
+      - run:
+          name: Create coverage report
+          command: coverage report
+      - run:
+          name: Create HTML coverage report
+          command: coverage html
           
       - store_artifacts:
         path: htmlcov
