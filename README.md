@@ -4,7 +4,7 @@
 Wee Python script using regex and string manipulation to remove unused imports from .py files. 
 Uses a CircleCI workflow to build and test on each commit.
 
-##How To Use
+## How To Use
 Clone the repository or just the main import_remover.py file. Navigate to the 
 Can be used from the command line, taking an argument of the file to have the unused imports removed (using either an absolute or relative path). For example:  
 ```$python import_remover.py filename.py```  
